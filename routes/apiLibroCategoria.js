@@ -1,20 +1,41 @@
 import express from 'express'
-import { db  } from '../db/conn.js'
-
+import { db } from '../db/conn.js';
 const libroCategoria = express();
 
-libroCategoria.get('/:id/libro', async (req,res)=>{
+libroCategoria.get('', async (req, res)=>{
 
-    const categoriaId = req.params.id;
+    const sql = `Select * from tbl_libros_categorias`;
+    const result = await db.query(sql)
+    res.json(result);
+})
 
-    const sql = `SELECT tbl_libro.id AS libro_id, tbl_libro.titulo AS nombre_libro, tbl_categoria.nombre
-                FROM tbl_libro
-                JOIN tbl_libros_categorias ON tbl_libro.id = tbl_libros_categorias.libro_id
-                JOIN tbl_categoria ON tbl_categoria.id = tbl_libros_categorias.categoria_id
-                WHERE tbl_categoria.id = $1`;
+libroCategoria.post('', async (req,res)=>{
+    const { libro_id, categoria_id } = req.body;
+    const params = [ libro_id, categoria_id];
 
-  const result = await db.query(sql, [categoriaId])
-  res.json(result);
+    const sql=`INSERT INTO tbl_libros_categorias
+                (libro_id, categoria_id)
+                VALUES
+                ($1,$2) returning *`;
+       const result = await db.query(sql, params)
+       res.json(result);
+   
+})
+
+libroCategoria.put('/:id', async (req, res)=>{
+      const { libro_id , categoria_id } = req.body;
+      const { id, id2 } = req.params;
+      const params = [libro_id, categoria_id, id, id2];
+
+     const sql = `update tbl_libros_categorias set
+                    libro_id = $1,
+                    categoria_id = $2
+                where id = $3 returning *`;
+     
+    const result = await db.query(sql, params);
+    res.json(result)
+
+
 })
 
 export { libroCategoria }
