@@ -52,4 +52,4 @@ const deleteUsuario = async (req, res)=>{
     res.json(result);
 }
 
-export { getUsuario, postUsuario, putUsuario }
+export { getUsuario, postUsuario, putUsuario, deleteUsuario }
