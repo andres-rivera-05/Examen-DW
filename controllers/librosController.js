@@ -49,5 +49,4 @@ const deleteLibro = async (req, res)=>{
     res.json(result);
 }
 
-
 export { getLibro, postLibro, putLibro, deleteLibro }
