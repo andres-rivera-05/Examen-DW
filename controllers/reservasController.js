@@ -3,13 +3,19 @@ import { db } from '../db/conn.js'
 const getReserva = async (req, res)=>{
 
     //const sql = `Select * from tbl_reserva order by id`;
-    const sql = `SELECT r.id, u.id as usuario_id, u.nombre as nombre_usuario, l.titulo as titulo_libro, r.fecha_reserva, r.fecha_devolucion, r.estado
-    FROM tbl_reserva r
-    INNER JOIN tbl_usuario u ON r.usuario_id = u.id
-    INNER JOIN tbl_libro l ON r.libro_id = l.id`
+    const sql = `SELECT
+                tbl_reserva.id,
+                tbl_usuario.nombre AS nombre_usuario,
+                tbl_libro.titulo AS nombre_libro,
+                tbl_reserva.fecha_reserva,
+                tbl_reserva.fecha_devolucion,
+                tbl_reserva.estado
+            FROM
+                tbl_reserva
+                JOIN tbl_usuario ON tbl_reserva.usuario_id = tbl_usuario.id
+                JOIN tbl_libro ON tbl_reserva.libro_id = tbl_libro.id;`
     const result = await db.query(sql)
     res.json(result);
-
 }
 
 const postReserva = async (req, res)=>{

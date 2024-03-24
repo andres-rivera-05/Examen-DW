@@ -1,40 +1,56 @@
 -- Active: 1707795232143@@127.0.0.1@5432@biblioteca@public
+
+CREATE Table tbl_categorias (
+    id SERIAL PRIMARY KEY,,
+    nombreCategoria VARCHAR(255) NOT NULL
+);
+
+SELECT * FROM tbl_categorias
+
+INSERT INTO tbl_categorias (nombreCategoria) VALUES ('Novelas');
+
  CREATE Table tbl_libro
  (
      id SERIAL PRIMARY KEY,
      titulo VARCHAR(255) NOT NULL,
      autor VARCHAR(255) NOT NULL,
      anio_publicacion INTEGER,
-     creado TIMESTAMP DEFAULT current_timestamp
+     estado VARCHAR(50) NOT NULL,
+     creado TIMESTAMP DEFAULT current_timestamp,
+     categoria_id INTEGER REFERENCES tbl_categorias (id)
  );
 
-
  INSERT INTO tbl_libro
- (titulo, autor, anio_publicacion)
+ (titulo, autor, anio_publicacion, estado, categoria_id)
  VALUES
- ('Cien anios de soledad','Gabriela Garcia',1967);
+ ('El nombre del viento','Patrick Rothfuss',2007,'Disponible',2);
 
- SELECT * FROM tbl_libro
+SELECT * FROM tbl_libro
 
- 
+---reseteando el contador de la tabla tbl_libro
+ALTER SEQUENCE tbl_libro_id_seq RESTART WITH 1;
+SELECT * FROM tbl_libro 
 
  CREATE Table tbl_usuario
  (
      id SERIAL PRIMARY KEY,
      nombre VARCHAR(255) NOT NULL,
+     imagen bytea,
+     mime_type VARCHAR(250),
+     nombre_archivo VARCHAR(250),
      gmail VARCHAR(255) NOT NULL,
      contrasenia VARCHAR(255) NOT NULL,
      creado TIMESTAMP DEFAULT current_timestamp
  );
 
- INSERT INTO tbl_usuario
- (nombre, gmail, contrasenia)
-VALUES
-('Juan Rivera', 'juanrivera200@gmail.com','12345678'),
-('Maria Rodriguez', 'maria1982@gmail.com', 'Maria234'),
-('Andres','andresrivera@gmail.com','gato2345');
 
-SELECT * FROM tbl_usuario
+ALTER TABLE tbl_usuario
+ADD COLUMN contrasenia VARCHAR(20);
+SELECT  * FROM tbl_usuario 
+
+
+
+SELECT * FROM tbl_usuario   
 
 
  CREATE Table tbl_reserva
@@ -42,6 +58,7 @@ SELECT * FROM tbl_usuario
      id SERIAL PRIMARY KEY,
      usuario_id INTEGER REFERENCES tbl_usuario(id),
      libro_id INTEGER REFERENCES tbl_libro(id),
+     estado VARCHAR(225),
      fecha_reserva DATE NOT NULL,
      fecha_devolucion DATE NOT NULL
  );
@@ -49,13 +66,18 @@ SELECT * FROM tbl_usuario
  ALTER TABLE tbl_reserva
  add estado VARCHAR(225);
 
+ SELECT * FROM tbl_reserva
+
+ INSERT INTO tbl_reserva
+ (usuario_id, libro_id, fecha_reserva, fecha_devolucion, estado)
+ VALUES
+ (13,23,'2024-01-21','2024-01-25', 'Activo');
+
  INSERT INTO tbl_reserva(usuario_id, libro_id, fecha_reserva, fecha_devolucion)
  VALUES
  (1,3,'2024-02-15','2024-02-22');
 
  select * FROM tbl_reserva
-
-
 
   INSERT INTO tbl_reserva(usuario_id, libro_id, fecha_reserva, fecha_devolucion)
  VALUES
@@ -65,19 +87,9 @@ SELECT * FROM tbl_usuario
 SELECT tbl_libro.*, tbl_reserva.* FROM tbl_libro JOIN tbl_reserva On tbl_libro.id = tbl_reserva.libro_id;
 
 
- CREATE Table tbl_categoria
- (
-     id SERIAL PRIMARY KEY,
-     nombre VARCHAR(255) NOT NULL
- );
 
 
-INSERT INTO tbl_categoria
-(nombre)
-VALUES
-('Ficcion'),
-('terror'),
-('comedia');
+SELECT FROM tbl_categorias 
 
 SELECT * FROM tbl_libros_categorias
 
@@ -115,7 +127,7 @@ ADD CONSTRAINT unique_libro_categoria UNIQUE (libro_id, categoria_id);
  (4,1);
 
 
- SELECT *FROM tbl_libros_categorias
+ SELECT *FROM tbl_libros_categorias 
 
 
  SELECT r.id, u.nombre as nombre_usuario, r.libro_id, r.fecha_reserva, r.fecha_devolucion, r.estado
@@ -137,8 +149,75 @@ SELECT * FROM tbl_categoria
 
 SELECT * FROM tbl_categoria
 
-select tbl_libro.* 
-    from tbl_libro 
-    join tbl_libros_categorias on tbl_libro.id = tbl_libros_categorias.libro_id
-    join tbl_categoria on tbl_libros_categorias.categoria_id = tbl_categoria.id
-    where tbl_categoria.nombre = 'terror';
+
+
+
+
+SELECT tbl_libro.*,
+        tbl_categorias.nombrecategoria AS nombre_categoria
+FROM tbl_libro
+    JOIN tbl_categorias ON tbl_libro.categoria_id = tbl_categorias.id
+WHERE
+    tbl_categorias.id = 1;
+
+    SELECT tbl_libro.*, tbl_categorias.nombrecategoria AS nombre_categoria
+FROM tbl_libro
+    JOIN tbl_categorias ON tbl_libro.categoria_id = tbl_categorias.id
+
+
+
+
+
+SELECT
+    tbl_reserva.id,
+    tbl_usuario.nombre AS nombre_usuario,
+    tbl_libro.titulo AS nombre_libro,
+    tbl_reserva.fecha_reserva,
+    tbl_reserva.fecha_devolucion,
+    tbl_reserva.estado
+FROM
+    tbl_reserva
+    JOIN tbl_usuario ON tbl_reserva.usuario_id = tbl_usuario.id
+    JOIN tbl_libro ON tbl_reserva.libro_id = tbl_libro.id;
+
+
+
+
+SELECT
+    tbl_reserva.id,
+    tbl_usuario.nombre AS nombre_usuario,
+    tbl_libro.titulo AS nombre_libro,
+    tbl_reserva.fecha_reserva,
+    tbl_reserva.fecha_devolucion,
+    tbl_reserva.estado,
+    total_reservas_usuario.total_reservas
+FROM
+    tbl_reserva
+    JOIN tbl_usuario ON tbl_reserva.usuario_id = tbl_usuario.id
+    JOIN tbl_libro ON tbl_reserva.libro_id = tbl_libro.id
+    JOIN (
+        SELECT usuario_id, COUNT(id) AS total_reservas
+        FROM tbl_reserva
+        GROUP BY
+            usuario_id
+    ) AS total_reservas_usuario ON tbl_reserva.usuario_id = total_reservas_usuario.usuario_id;
+
+
+    SELECT
+    tbl_usuario.id,
+    tbl_usuario.nombre,
+    tbl_usuario.gmail,
+    tbl_usuario.mime_type,
+    ENCODE(tbl_usuario.imagen, 'base64') AS imagen,
+    COALESCE(
+        total_reservas_usuario.total_reservas, 0
+    ) AS total_reservas
+FROM
+    tbl_usuario
+    LEFT JOIN (
+        SELECT usuario_id, COUNT(id) AS total_reservas
+        FROM tbl_reserva
+        GROUP BY
+            usuario_id
+    ) AS total_reservas_usuario ON tbl_usuario.id = total_reservas_usuario.usuario_id
+ORDER BY tbl_usuario.id;
