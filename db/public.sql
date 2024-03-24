@@ -221,3 +221,33 @@ FROM
             usuario_id
     ) AS total_reservas_usuario ON tbl_usuario.id = total_reservas_usuario.usuario_id
 ORDER BY tbl_usuario.id;
+
+
+
+
+SELECT
+    tbl_reserva.id,
+    tbl_usuario.id AS id_usuario,
+    tbl_usuario.nombre AS nombre_usuario,
+    tbl_libro.id AS id_libro,
+    tbl_libro.titulo AS nombre_libro,
+    tbl_reserva.fecha_reserva,
+    tbl_reserva.fecha_devolucion,
+    tbl_reserva.estado
+FROM
+    tbl_reserva
+    JOIN tbl_usuario ON tbl_reserva.usuario_id = tbl_usuario.id
+    JOIN tbl_libro ON tbl_reserva.libro_id = tbl_libro.id;
+
+-- sin id
+    SELECT
+    tbl_reserva.id,
+    tbl_usuario.nombre AS nombre_usuario,
+    tbl_libro.titulo AS nombre_libro,
+    tbl_reserva.fecha_reserva,
+    tbl_reserva.fecha_devolucion,
+    tbl_reserva.estado
+FROM
+    tbl_reserva
+    JOIN tbl_usuario ON tbl_reserva.usuario_id = tbl_usuario.id
+    JOIN tbl_libro ON tbl_reserva.libro_id = tbl_libro.id

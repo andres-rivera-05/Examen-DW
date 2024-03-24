@@ -5,7 +5,9 @@ const getReserva = async (req, res)=>{
     //const sql = `Select * from tbl_reserva order by id`;
     const sql = `SELECT
                 tbl_reserva.id,
+                tbl_usuario.id AS id_usuario,
                 tbl_usuario.nombre AS nombre_usuario,
+                tbl_libro.id AS id_libro,
                 tbl_libro.titulo AS nombre_libro,
                 tbl_reserva.fecha_reserva,
                 tbl_reserva.fecha_devolucion,
@@ -20,7 +22,7 @@ const getReserva = async (req, res)=>{
 
 const postReserva = async (req, res)=>{
 
-    const { usuario_id, libro_id, fecha_reserva, fecha_devolucion, estado  } = req.body;
+    const { usuario_id, libro_id, fecha_reserva, fecha_devolucion, estado } = req.body;
     const params = [usuario_id, libro_id, fecha_reserva, fecha_devolucion, estado];
 
     const sql =`insert into tbl_reserva
